@@ -20,6 +20,13 @@ export const keywords = pgTable("keywords", {
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
 
+export const searchHistory = pgTable("search_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  query: text("query").notNull(),
+  searchedAt: timestamp("searched_at").notNull().defaultNow(),
+});
+
 export const keywordSearchSchema = z.object({
   query: z.string().min(1).max(100),
 });
@@ -39,8 +46,13 @@ export const keywordResponseSchema = z.object({
   trend: z.number(),
 });
 
+export const aiSuggestionsSchema = z.object({
+  query: z.string().min(1).max(100),
+});
+
 export type KeywordResponse = z.infer<typeof keywordResponseSchema>;
 export type KeywordSearch = z.infer<typeof keywordSearchSchema>;
 export type UserLogin = z.infer<typeof userLoginSchema>;
 export type UserRegister = z.infer<typeof userRegisterSchema>;
 export type User = typeof users.$inferSelect;
+export type SearchHistory = typeof searchHistory.$inferSelect;

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { keywordSearchSchema, userLoginSchema, userRegisterSchema } from "@shared/schema";
+import { keywordSearchSchema, userLoginSchema, userRegisterSchema, aiSuggestionsSchema } from "@shared/schema";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
@@ -64,6 +64,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: "Not authenticated" });
     }
     res.json({ userId: req.session.userId });
+  });
+
+  // User profile and history routes
+  app.get("/api/user/history", async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const history = await storage.getSearchHistory(req.session.userId);
+      res.json(history);
+    } catch (error) {
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to fetch search history" 
+      });
+    }
+  });
+
+  // AI suggestions route
+  app.post("/api/keywords/suggest", async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const { query } = aiSuggestionsSchema.parse(req.body);
+      const suggestions = await storage.getAISuggestions(query);
+      res.json(suggestions);
+    } catch (error) {
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to get AI suggestions" 
+      });
+    }
   });
 
   // Keyword search route

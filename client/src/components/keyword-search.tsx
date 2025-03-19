@@ -5,14 +5,14 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { KeywordResponse } from "@shared/schema";
-import { useState } from "react";
 
 interface KeywordSearchProps {
   onResults: (results: KeywordResponse[]) => void;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-export function KeywordSearch({ onResults }: KeywordSearchProps) {
-  const [query, setQuery] = useState("");
+export function KeywordSearch({ onResults, value, onChange }: KeywordSearchProps) {
   const { toast } = useToast();
 
   const { mutate, isPending } = useMutation({
@@ -34,15 +34,15 @@ export function KeywordSearch({ onResults }: KeywordSearchProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    mutate(query);
+    if (!value.trim()) return;
+    mutate(value);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder="Enter a keyword..."
         className="flex-1"
       />
